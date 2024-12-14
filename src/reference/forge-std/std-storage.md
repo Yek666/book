@@ -50,6 +50,45 @@ Let's say we want to set the level of our character to 120.
 
 ```solidity
 // MetaRPG.t.sol
+// Reads the entire content of file to string, (path) => (data)
+function readFile(string calldata) external returns (string memory);
+/// Reads the entire content of file as binary. `path` is relative to the project root.
+function readFileBinary(string calldata path) external view returns (bytes memory data);
+/// Reads the directory at the given path recursively, up to `maxDepth`.
+/// `maxDepth` defaults to 1, meaning only the direct children of the given directory will be returned.
+/// Follows symbolic links if `followLinks` is true.
+function readDir(string calldata path) external view returns (DirEntry[] memory entries);
+// Reads next line of file to string, (path) => (line)
+function readLine(string calldata) external returns (string memory);
+/// Reads a symbolic link, returning the path that the link points to.
+/// This cheatcode will revert in the following situations, but is not limited to just these cases:
+/// - `path` is not a symbolic link.
+/// - `path` does not exist.
+function readLink(string calldata linkPath) external view returns (string memory targetPath);
+// Writes data to file, creating a file if it does not exist, and entirely replacing its contents if it does.
+// (path, data) => ()
+function writeFile(string calldata, string calldata) external;
+// Writes line to file, creating a file if it does not exist.
+// (path, data) => ()
+function writeLine(string calldata, string calldata) external;
+// Closes file for reading, resetting the offset and allowing to read it from beginning with readLine.
+// (path) => ()
+function closeFile(string calldata) external;
+// Removes file. This cheatcode will revert in the following situations, but is not limited to just these cases:
+// - Path points to a directory.
+// - The file doesn't exist.
+// - The user lacks permissions to remove the file.
+// (path) => ()
+function removeFile(string calldata) external;
+// Returns true if the given path points to an existing entity, else returns false
+// (path) => (bool)
+function exists(string calldata) external returns (bool);
+// Returns true if the path exists on disk and is pointing at a regular file, else returns false
+// (path) => (bool)
+function isFile(string calldata) external returns (bool);
+// Returns true if the path exists on disk and is pointing at a directory, else returns false
+// (path) => (bool)
+function isDir(string calldata) external returns (bool);
 
 stdstore
     .target(address(metaRpg))
@@ -58,6 +97,13 @@ stdstore
     .depth(1)
     .checked_write(120);
 ```
+// Verify that path 'foo/file/bar.txt' points to a file
+string memory validFilePath = "foo/files/bar.txt";
+assertTrue(vm.isFile(validFilePath));
+
+// Verify that 'foo/file' points to a directory
+string memory validDirPath = "foo/files";
+assertTrue(vm.isDir(validDirPath));
 
 ### Limitations
 
